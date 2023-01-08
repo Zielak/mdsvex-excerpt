@@ -1,6 +1,6 @@
 {
   "name": "mdsvex-excerpt",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Ability to show only a portion of document in certain layouts.",
   "main": "index.js",
   "type": "module",
@@ -10,7 +10,6 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "prettier": "^2.8.2",
     "unist-util-visit": "^3.1.0"
   },
   "repository": {
@@ -19,5 +18,8 @@
   },
   "bugs": {
     "url": "https://github.com/Zielak/mdsvex-excerpt/issues"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.2"
   }
 }
