@@ -1,15 +1,16 @@
 import { defineMDSveXConfig as defineConfig } from "mdsvex";
-import relativeImages from "mdsvex-relative-images";
+import remarkExcerpt from "mdsvex-excerpt";
 
 const config = defineConfig({
   extensions: [".svelte.md", ".md", ".svx"],
-
-  smartypants: {
-    dashes: "oldschool",
-  },
-
-  remarkPlugins: [relativeImages],
-  rehypePlugins: [],
+  remarkPlugins: [
+    [
+      remarkExcerpt,
+      {
+        componentPath: "$lib/More.svelte",
+      },
+    ],
+  ],
 });
 
 export default config;

@@ -1,17 +1,23 @@
 {
-  "name": "mdsvex-relative-images",
-  "version": "1.0.3",
-  "description": "Add support for relative image URLs in mdsvex",
+  "name": "mdsvex-excerpt",
+  "version": "0.1.0",
+  "description": "Ability to show only a portion of document in certain layouts.",
   "main": "index.js",
   "type": "module",
-  "author": "Matt Jennings",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mattjennings/mdsvex-relative-images"
-  },
+  "author": "Darek Greenly (https://darekgreenly.com)",
+  "contributors": [
+    "Matt Jennings"
+  ],
   "license": "ISC",
   "dependencies": {
-    "just-camel-case": "^4.0.2",
+    "prettier": "^2.8.2",
     "unist-util-visit": "^3.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zielak/mdsvex-excerpt"
+  },
+  "bugs": {
+    "url": "https://github.com/Zielak/mdsvex-excerpt/issues"
   }
 }

@@ -1,75 +1,56 @@
-// credit to pngwn doing majority of the plugin - https://github.com/pngwn/MDsveX/discussions/246#discussioncomment-720947
-
 import { visit } from "unist-util-visit";
-import toCamel from "just-camel-case";
 
 const RE_SCRIPT_START =
   /<script(?:\s+?[a-zA-z]+(=(?:["']){0,1}[a-zA-Z0-9]+(?:["']){0,1}){0,1})*\s*?>/;
-const RE_SRC = /src\s*=\s*"(.+?)"/;
 
-export default function relativeImages() {
-  return function transformer(tree) {
-    const urls = new Map();
-    const url_count = new Map();
+export default function remarkExcerpt(options = {}) {
+  const {
+    componentName = "More",
+    componentPath = "$lib/components/More.svelte",
+    excerptMark = "<!--more-->",
+  } = options;
 
-    function transformUrl(url) {
-      url = decodeURIComponent(url)
-      
-      if (url.startsWith(".")) {
-        // filenames can start with digits,
-        // prepend underscore to guarantee valid module name
-        let camel = `_${toCamel(url)}`;
-        const count = url_count.get(camel);
-        const dupe = urls.get(url);
+  const importMore = `\nimport ${componentName} from "${componentPath}";\n`;
 
-        if (count && !dupe) {
-          url_count.set(camel, count + 1);
-          camel = `${camel}_${count}`;
-        } else if (!dupe) {
-          url_count.set(camel, 1);
-        }
+  return function transform(tree) {
+    let foundExcerptTerminator = false;
 
-        urls.set(url, {
-          path: url,
-          id: camel,
-        });
-
-        return `{${camel}}`;
+    /**
+     * @param {import('unist').Node} node
+     */
+    function visitor(node) {
+      if (
+        foundExcerptTerminator ||
+        node.type !== "html" ||
+        node.value !== excerptMark
+      ) {
+        return;
       }
 
-      return url;
+      foundExcerptTerminator = true;
+      node.value = `<${componentName}>`;
     }
 
-    // transform urls in images
-    visit(tree, ["image", "definition"], (node) => {
-      node.url = transformUrl(node.url);
+    // find and replace <!--more-->
+    visit(tree, ["html"], visitor);
+
+    if (!foundExcerptTerminator) {
+      return;
+    }
+
+    tree.children.push({
+      type: "html",
+      value: `</${componentName}>`,
     });
-
-    // transform src in html nodes
-    visit(tree, "html", (node) => {
-      // only run on img or video elements. this is a cheap way to check it,
-      // eventually we should integrate it into the RE_SRC regex.
-      const isSupportedElement = node.value && node.value.match(/img|video/);
-
-      if (isSupportedElement) {
-        const [, url] = node.value.match(RE_SRC) ?? [];
-        if (url) {
-          const transformed = transformUrl(url);
-          node.value = node.value.replace(`"${url}"`, transformed);
-        }
-      }
-    });
-
-    let scripts = "";
-    urls.forEach((x) => (scripts += `import ${x.id} from "${x.path}";\n`));
 
     let is_script = false;
 
+    // append scripts or make a new one
     visit(tree, "html", (node) => {
-      if (RE_SCRIPT_START.test(node.value)) {
+      if (!is_script && RE_SCRIPT_START.test(node.value)) {
         is_script = true;
-        node.value = node.value.replace(RE_SCRIPT_START, (script) => {
-          return `${script}\n${scripts}`;
+        node.value = node.value.replace(RE_SCRIPT_START, (existingScript) => {
+          return `${existingScript}${importMore}`;
         });
       }
     });
@@ -77,7 +58,7 @@ export default function relativeImages() {
     if (!is_script) {
       tree.children.push({
         type: "html",
-        value: `<script>\n${scripts}</script>`,
+        value: `<script>${importMore}</script>`,
       });
     }
   };
